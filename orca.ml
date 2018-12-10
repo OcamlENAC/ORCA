@@ -1,3 +1,10 @@
+type cone_danger = {
+	origin : vector;
+	diameter : float; 
+	orientation : vector; (*Vecteur AB, AB' = AB/dt*)
+}
+
+
 let orca_deux_objet obj set_of_objects =
 	(* Chaque objet a Vitesse Position Rayon de visible et en secret un V optimale *)
 	
@@ -17,7 +24,7 @@ let create_cone dt robot obstacle =
 	let origin_cone_vect = {x = origin_cone_x; y = origin_cone_y} in
 	let danger_diameter = (obstacle.diameter + robot.diameter) *. norm (vect_orientation) /. dt in
 	(**** Def du cone de danger ****)
-	let danger_cone = { Geometry.origin = origin_cone_vect; Geometry.diameter = danger_diameter; Geometry.orientation = vect_orientation}
+	let danger_cone = { origin = origin_cone_vect; diameter = danger_diameter; orientation = vect_orientation}
 
 let is_in_danger_zone dt robot obstacle = 
 	let danger_cone = create_cone dt robot obstacle in 
