@@ -1,6 +1,6 @@
 let update objects dt =
 	(** Met a jour la liste de objects en appliquant l'ORCA *)
-	List.map (fun o -> Ia.update o dt) objects
+	List.map (fun o -> Orca.update o dt) objects
 
 let render_obj (o : Object.obj) = 
 	(** Afficher un object *)
@@ -27,10 +27,6 @@ let rec start_animation objects =
 		start_animation new_objects;
 	end
 
-(* IL FAUT:
-				liste de objects/objets
-				itérer sur cette liste, update puis render toute
-				les nouvelles positions des objets  *)
 
 let () = 
 	Printf.printf("Debut main\n");
