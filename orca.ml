@@ -1,6 +1,6 @@
 let orca_deux_objet object set_of_objects =
 	(* Chaque objet a Vitesse Position Rayon de visible et en secret un V optimale *)
-jifezhifzehifhifdzfuhfzhi
+	
 	(* Determiner le cone de risque *)
 
 	(* is_in_cone *)
