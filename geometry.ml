@@ -18,12 +18,6 @@ type semi_plan = {
 	vect_normal : vector;
 }
 
-type cone_danger = {
-	origin : vector;
-	diameter : float; 
-	orientation : vector; (*Vecteur AB, AB' = AB/dt*)
-}
-
 let scalar_product v1 v2 =
 	(** Retourne le produit scalaire entre deux vecteurs *)
 	v1.x *. v2.x +. v1.y *. v2.y 
