@@ -22,7 +22,7 @@ let create_cone dt robot obstacle =
 let is_in_danger_zone dt robot obstacle = 
 	let danger_cone = create_cone dt robot obstacle in 
 	(**** Calcul des composants du cone ****)
-	(*let vect_orientation = add_subst ( - ) obstacle.position robot.position in 
+	let vect_orientation = add_subst ( - ) obstacle.position robot.position in 
 	let origin_cone_x = robot.position.x +. (obstacle.position.x -. robot.position.x)/. dt in (* on appelle origine le centre du petit cercle ici*)
 	let origin_cone_y = robot.position.y +. (obstacle.position.y -. robot.position.y)/. dt in
 	let origin_cone_vect = {x = origin_cone_x; y = origin_cone_y} in
