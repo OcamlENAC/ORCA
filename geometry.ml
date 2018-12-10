@@ -49,38 +49,24 @@ let add_subst oper v1 v2 =
 	{x = oper v1.x v2.x ; y = oper v1.y v2.y} (*modifié pour pouvoir add ou subst*)
 
 let vect_normal_norme v =
-	let vnormal = {x = v.y; y = -(v.x)} in
+	let vnormal = {x = v.y ; y = -. v.x} in
 	let norme = norm vnormal in
-	{x = v.y /. norme; y = -(v.x) /. norme}
+	{x = v.y /. norme; y = (-. v.x) /. norme}
 
 let translation_vect_point vect point = 
-	{ x = point.x + vect.x ; y = point.y + vect.y }
+	{ x = point.x +. vect.x ; y = point.y +. vect.y }
+
+let get_unit_vector v =
+	mult_scal (1. /. norm v) v
+
+let determinant u v =
+	u.x *. v.y -. u.y *. v.x
+
+let relative_angle u v =
+	let pi = 3.141592653589793 in
+	let angle = ref 0. in
+	angle := (atan2 v.y v.x) -. (atan2 u.y u.x);
+	while !angle >= pi do angle := !angle -. (2. *. pi) done;
+	while !angle <= (-. pi) do angle := !angle +. (2. *. pi) done;
+	!angle
 	
-
-let is_in_danger_zone dt robot obstacle = 
-	(**** Calcul des composants du cone ****)
-	let vect_orientation = add_subst ( - ) obstacle.position robot.position in 
-	let origin_cone_x = robot.position.x +. (obstacle.position.x -. robot.position.x)/. dt in (* on appelle origine le centre du petit cercle ici*)
-	let origin_cone_y = robot.position.y +. (obstacle.position.y -. robot.position.y)/. dt in
-	let origin_cone_vect = {x = origin_cone_x; y = origin_cone_y} in
-	let danger_diameter = (obstacle.diameter + robot.diameter) *. norm (vect_orientation) /. dt in
-	(**** Def du cone de danger ****)
-	let danger_cone = { origin = origin_cone_vect; diameter = danger_diameter; orientation = vect_orientation} in
-	(****Verifier si la pointe du v Vopti est dans le cone****)
-	(*On regarde dans l'ordre angle relatif ? -> avant le cercle ? -> après le cercle ? -> dans le cercle ?*)
-	(*Angle relatif et autres pour les conditions*)
-	let relat_ang_vrobot_vorient = relative_angle obstacle.vitesse robot.vitesse in
-	let vnormal = vect_normal_norme vect_orientation *. (diameter/.2) in
-	let pt_tangent = translation_vect_point vect_normal danger_cone.origin in
-	let vect_tangent = {x = pt_tangent.x - robot.x ; y = pt_tangent.y - robot.y} in 
-	let relat_ang_vtangent_v_orient = relative_angle vect_tangent vect_orientation in
-	let norm_proj_vrobot_vorient = norm (project robot.speed obstacle.speed) in
-	let vect_origincone_pointevectvitesse = add_subst {x = - robot.speed.x ; y = - robot.speed.y} (mult_scal (1 /. dt) vect_orientation) in
-	(** Debut des conditions **)
-	if relat_ang_vrobot_vorient > relat_ang_vtangent_v_orient then false 
-	else if norm_proj_vrobot_vorient > (norm vect_orientation /. dt) then true
-	else if norm vect_origincone_pointevectvitesse < danger_cone.diameter = then true
-	else false
-
-
-
