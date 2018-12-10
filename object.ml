@@ -29,7 +29,10 @@ let update_pos o dt =
 	let new_pos = Geometry.add o.position (Geometry.mult_scal dt o.speed) in
 	set_obj_pos o new_pos
 
-let calc_opt_speed o =
-	(** Calcul la vitesse optimale d'un objet pour qu'il atteigne sa destination *)
-	0
+let calc_opt_speed obj =
+	(** Calcul la vitesse optimale sans obstacle d'un objet pour qu'il atteigne sa destination *)
+	let vdirection_opt_speed ={Geometry.x = obj.dest.x - obj.position.x ; Geometry.y = obj.dest.y - obj.position.y} in
+	let vdirection_norme = Geometry.mult_scal ( 1.0 /. norm vdirection_opt_speed ) vdirection_norme in
+	let opt_speed = Geometry.mult_scal obj.max_speed *. vdirection_norme in
+	opt_speed
 
