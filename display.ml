@@ -1,6 +1,6 @@
-let update objects dt =
+let update objects refreshing_time =
 	(** Met a jour la liste de objects en appliquant l'ORCA *)
-	List.map (fun o -> Orca.update o dt) objects
+	List.map (fun o -> Orca.update o refreshing_time) objects
 
 let render_obj (o : Object.obj) = 
 	(** Afficher un object *)
@@ -17,13 +17,13 @@ let render objects =
 
 let rec start_animation objects =
 	(** Boucle d'animation, ne renvoit rien*)
-	let dt = 1. /. 25. in
-	let no = update objects dt in
+	let refreshing_time = 1. /. 25. in
+	let no = update objects refreshing_time in
 	let new_objects = render no in
 	begin
-		Unix.sleepf (dt);
+		Unix.sleepf (refreshing_time);
 		Graphics.set_color Graphics.white;
-		Graphics.fill_rect 0 0 800 600 ;
+		Graphics.fill_rect 0 0 (Graphics.size_x ()) (Graphics.size_y ()) ;
 		start_animation new_objects;
 	end
 
@@ -31,7 +31,7 @@ let rec start_animation objects =
 let () = 
 	Printf.printf("Debut main\n");
 	Graphics.open_graph " 800x600";
-	let p2 = Object.init 150. 200. 1. 1. 5. 0. 0.
-	and p1 = Object.init 500. 10. 1. 25. 5. 0. 0. in
+	let p2 = Object.init_from_pos 150. 200.
+	and p1 = Object.init_from_pos 500. 10. in
 	let objects = p1 :: p2 :: [] in
 	start_animation objects
