@@ -34,7 +34,7 @@ let scalar_product v1 v2 =
 
 let norm v = 
 	(** Retourne la norme du vecteur v *)
-	scalar_product v v
+	sqrt (scalar_product v v)
 
 let project v1 v2 =
 	(** Project vector v1 on v2 and return the projected vector *)
