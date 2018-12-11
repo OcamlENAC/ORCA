@@ -18,6 +18,16 @@ type semi_plan = {
 	vect_normal : vector;
 }
 
+type d_cone = {
+	(** 	origin = centre du cercle de rayon r = AB/tau
+		rayon = du cercle de taille ab/tau
+		vect = ab'
+	*)
+	origin: vector;
+	rayon : float;
+	vect: vector;
+}
+
 let scalar_product v1 v2 =
 	(** Retourne le produit scalaire entre deux vecteurs *)
 	v1.x *. v2.x +. v1.y *. v2.y 
