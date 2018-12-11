@@ -32,10 +32,6 @@ let project v1 v2 =
 	let facteur = (scalar_product v1 v2) /. norm v2 in
 	{x = facteur *. v2.x; y = facteur *. v2.y}
 
-let relative_angle v1 v2 =
-	(** retourne l'angle relatif entre 2 vecteurs *)
-	acos ( (scalar_product v1 v2) /. ( norm v1 *. norm v2) )
-
 let mult_scal dt v =
 	{x=v.x *. dt ; y=v.y *. dt}
 
