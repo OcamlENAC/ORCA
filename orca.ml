@@ -1,8 +1,3 @@
-type cone_danger = {
-	origin : vector;
-	diameter : float; 
-	orientation : vector; (*Vecteur AB, AB' = AB/dt*)
-}
 
 
 let orca_deux_objet obj set_of_objects =
