@@ -1,6 +1,5 @@
 
 type obj = {
-	
 	position : Geometry.vector;
 	speed : Geometry.vector;
 	diameter : float;
@@ -29,16 +28,14 @@ let set_obj_pos o new_pos =
 let set_obj_speed o new_speed = 
 	{position=o.position;speed=new_speed;diameter=o.diameter;dest=o.dest;max_speed=o.max_speed}
 
-let update_pos o refreshin_time =
-	let new_pos = Geometry.add o.position (Geometry.mult_scal refreshing_time o.speed) in
+let update_pos o refreshing_time =
+	let new_pos = Geometry.add_subst (+.) o.position (Geometry.mult_scal refreshing_time o.speed) in
 	set_obj_pos o new_pos
 
 let calc_opt_speed obj =
 	(** Calcul la vitesse optimale sans obstacle d'un objet pour qu'il atteigne sa destination *)
-	let vdirection_opt_speed ={Geometry.x = obj.dest.x - obj.position.x ; Geometry.y = obj.dest.y - obj.position.y} in
+	let vdirection_opt_speed ={Geometry.x = obj.dest.x -. obj.position.x ; Geometry.y = obj.dest.y -. obj.position.y} in
 	let vdirection_norme = Geometry.get_unit_vector vdirection_opt_speed in
 	let opt_speed = Geometry.mult_scal obj.max_speed vdirection_norme in
 	opt_speed
-
-
 
