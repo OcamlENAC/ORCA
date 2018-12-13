@@ -37,6 +37,17 @@ let update objects refreshing_time =
 	
 	[| Object.update_pos new_objA refreshing_time ; Object.update_pos new_objB refreshing_time |]
 
+let calc_danger_cone  (robot : Object.obj) (obstacle: Object.obj) dt =
+(**** Calcul des composants du cone ****)
+	let vecttry = (Geometry.add_subst ( -. ) obstacle.position robot.position) in
+	let vect_orientation = Geometry.mult_scal (1./.dt) vecttry in
+	let origin_cone_x = robot.position.x +. (obstacle.position.x -. robot.position.x)/. dt in (* on appelle origine le centre du petit cercle ici*)
+	let origin_cone_y = robot.position.y +. (obstacle.position.y -. robot.position.y)/. dt in
+	let origin_cone_vect = {Geometry.x = origin_cone_x; Geometry.y = origin_cone_y} in
+	let danger_rayon = (obstacle.diameter +. robot.diameter) *. Geometry.norm (vect_orientation) /. (2. *.dt) in
+	(**** Def du cone de danger ****)
+	{ Geometry.origin = origin_cone_vect; Geometry.rayon = danger_rayon; Geometry.vect = vect_orientation;}
+
 
 (*
 
