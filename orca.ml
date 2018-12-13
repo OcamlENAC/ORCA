@@ -1,10 +1,26 @@
 
 
-let calc_cone objA objB =
-	0
 
-let is_in_danger vr cone =
-	0
+let is_in_danger_zone robot obstacle dt = 
+	let danger_cone = Geometry.create_cone dt robot obstacle in 
+	let v_relat = Geometry.add_subst ( -. ) robot.speed obstacle.speed in 
+	let v_orient =  Geometry.add_subst ( -. ) robot.position obstacle.position in 
+	(****Verifier si la pointe du v Vopti est dans le cone****)
+	(*On regarde dans l'ordre angle relatif ? -> avant le cercle ? -> après le cercle ? -> dans le cercle ?*)
+	(*Angle relatif et autres pour les conditions*) 
+	let relat_ang_vrelat_vorient = abs_float (Geometry.relative_angle v_relat v_orient) in
+	let relat_ang_v_tangent_v_orient = abs_float (asin ((danger_cone.diameter /. 2.)/.(Geometry.norm v_orient))) (*Voir le tableau, c'est l'angle alpha*)
+	let norm_proj_vrobot_vorient = Geometry.norm (project robot.speed obstacle.speed) in
+	let vect_origincone_pointevectvitesse = Geometry.add_subst ( -. ) vrelat (Geometry.mult_scal (1 /. dt) vect_orientation) in
+	(** Debut des conditions **)
+	if relat_ang_vrobot_vorient > relat_ang_v_tangent_v_orient then false 
+	else if norm_proj_vrobot_vorient > (norm vect_orientation /. dt) then true
+	else if norm vect_origincone_pointevectvitesse < danger_cone.diameter  then true
+	else false
+
+
+
+
 
 let get_correction vr cone =
 	0
@@ -36,18 +52,7 @@ let update objects refreshing_time =
 	let (new_objA, new_objB) = (new_speed objA objB false) in
 	
 	[| Object.update_pos new_objA refreshing_time ; Object.update_pos new_objB refreshing_time |]
-
-let calc_danger_cone  (robot : Object.obj) (obstacle: Object.obj) dt =
-(**** Calcul des composants du cone ****)
-	let vecttry = (Geometry.add_subst ( -. ) obstacle.position robot.position) in
-	let vect_orientation = Geometry.mult_scal (1./.dt) vecttry in
-	let origin_cone_x = robot.position.x +. (obstacle.position.x -. robot.position.x)/. dt in (* on appelle origine le centre du petit cercle ici*)
-	let origin_cone_y = robot.position.y +. (obstacle.position.y -. robot.position.y)/. dt in
-	let origin_cone_vect = {Geometry.x = origin_cone_x; Geometry.y = origin_cone_y} in
-	let danger_rayon = (obstacle.diameter +. robot.diameter) *. Geometry.norm (vect_orientation) /. (2. *.dt) in
-	(**** Def du cone de danger ****)
-	{ Geometry.origin = origin_cone_vect; Geometry.rayon = danger_rayon; Geometry.vect = vect_orientation;}
-
+z
 
 (*
 
@@ -102,10 +107,3 @@ let is_in_danger_zone dt robot obstacle =
 let get_vect_correction dt robot obstacle danger_cone=0
 
 *)
-
-
-let get_correction vr (d_cone : Geometry.d_cone) =
-	let r_angle = Geometry.relative_angle d_cone.vect vr in
-	let alpha = asin ( d_cone.rayon /. ( Geometry.norm d_cone.vect ) ) in
-	let proj_vr_cone = Geometry.rotate_vect vr (alpha -. r_angle) in
-	Geometry.add_subst (-.) proj_vr_cone vr 
