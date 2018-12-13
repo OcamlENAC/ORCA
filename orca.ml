@@ -1,8 +1,6 @@
 
 
-
-let is_in_danger_zone robot obstacle dt = 
-	let danger_cone = Geometry.create_cone dt robot obstacle in 
+let is_in_danger_zone robot obstacle danger_cone dt = 
 	let v_relat = Geometry.add_subst ( -. ) robot.speed obstacle.speed in 
 	let v_orient =  Geometry.add_subst ( -. ) robot.position obstacle.position in 
 	(****Verifier si la pointe du v Vopti est dans le cone****)
@@ -20,23 +18,6 @@ let is_in_danger_zone robot obstacle dt =
 
 
 
-
-
-let get_correction vr cone =
-	0
-
-let new_speed objA objB in_danger =
-	(* S'il n'y a pas de risque de collision alors on calcul leur V_opti
-		et on renvoit  A et B avec des vitesses modifiées *)
-	if not in_danger then
-		let new_v_A = Object.calc_opt_speed objA
-		and new_v_B = Object.calc_opt_speed objB in
-		let new_objA = Object.set_obj_speed objA new_v_A
-		and new_objB = Object.set_obj_speed objB new_v_B in
-		(new_objA, new_objB)
-	else (objA, objB)
-
-
 let correct objA objB v_correction =
 	0
 
@@ -48,11 +29,54 @@ let update objects refreshing_time =
 
 	doit renvoyer Array avec objA et objB avec vitesses et positions modifiées
 	*)
+	let dt = 1. in
 	let objA = objects.(0) and objB = objects.(1) in
-	let (new_objA, new_objB) = (new_speed objA objB false) in
+	let d_cone = calc_danger_cone objA objB dt in
+	let in_danger = is_in_danger objA objB d_cone dt in
+	let (new_objA, new_objB) = (new_speed objA objB in_danger d_cone) in
 	
 	[| Object.update_pos new_objA refreshing_time ; Object.update_pos new_objB refreshing_time |]
-z
+
+
+let calc_danger_cone  (robot : Object.obj) (obstacle: Object.obj) dt =
+(**** Calcul des composants du cone ****)
+	let vecttry = (Geometry.add_subst ( -. ) obstacle.position robot.position) in
+	let vect_orientation = Geometry.mult_scal (1./.dt) vecttry in
+	let origin_cone_x = robot.position.x +. (obstacle.position.x -. robot.position.x)/. dt in (* on appelle origine le centre du petit cercle ici*)
+	let origin_cone_y = robot.position.y +. (obstacle.position.y -. robot.position.y)/. dt in
+	let origin_cone_vect = {Geometry.x = origin_cone_x; Geometry.y = origin_cone_y} in
+	let danger_rayon = (obstacle.diameter +. robot.diameter) *. Geometry.norm (vect_orientation) /. (2. *.dt) in
+	(**** Def du cone de danger ****)
+	{ Geometry.origin = origin_cone_vect; Geometry.rayon = danger_rayon; Geometry.vect = vect_orientation;}
+
+
+
+let get_correction vr (d_cone : Geometry.d_cone) =
+	let r_angle = Geometry.relative_angle d_cone.vect vr in
+	let alpha = asin ( d_cone.rayon /. ( Geometry.norm d_cone.vect ) ) in
+	let proj_vr_cone = Geometry.rotate_vect vr (alpha -. r_angle) in
+	Geometry.add_subst (-.) proj_vr_cone vr 
+
+
+let new_speed objA objB in_danger d_cone =
+	(* S'il n'y a pas de risque de collision alors on calcul leur V_opti
+		et on renvoit  A et B avec des vitesses modifiées *)
+	if not in_danger then
+		let new_v_A = Object.calc_opt_speed objA
+		and new_v_B = Object.calc_opt_speed objB in
+		let new_objA = Object.set_obj_speed objA new_v_A
+		and new_objB = Object.set_obj_speed objB new_v_B in
+		(new_objA, new_objB)
+	else 
+		let vr = Geometry.add_subst (-.) objA.speed objB.speed
+		let correction = get_correction vr d_cone in
+		let new_v_A = Geometry.add_subst (+.) objA.speed (Geometry.mult_scal 0.5 correction) in
+		and new_v_B = Geometry.add_subst (-.) objB.speed (Geometry.mult_scal 0.5 correction) in
+		let new_objA = Object.set_obj_speed objA new_v_A
+		and new_objB = Object.set_obj_speed objB new_v_B in
+		(new_objA, new_objB)
+
+
 
 (*
 
