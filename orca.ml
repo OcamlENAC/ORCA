@@ -91,3 +91,10 @@ let is_in_danger_zone dt robot obstacle =
 let get_vect_correction dt robot obstacle danger_cone=0
 
 *)
+
+
+let get_correction vr (d_cone : Geometry.d_cone) =
+	let r_angle = Geometry.relative_angle d_cone.vect vr in
+	let alpha = asin ( d_cone.rayon /. ( Geometry.norm d_cone.vect ) ) in
+	let proj_vr_cone = Geometry.rotate_vect vr (alpha -. r_angle) in
+	Geometry.add_subst (-.) proj_vr_cone vr 
