@@ -70,3 +70,8 @@ let relative_angle u v =
 	while !angle <= (-. pi) do angle := !angle +. (2. *. pi) done;
 	!angle
 	
+let rotate_vect v angle =
+	(* Renvoit un nouveau vecteur  sur lequel on a appliqué une rotation de 'angle' *)
+	{x = v.x *. cos angle -. v.y *. sin angle ; y = v.x *. sin angle +. v.y *. cos angle}
+
+
