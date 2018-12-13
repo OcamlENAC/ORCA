@@ -74,4 +74,10 @@ let rotate_vect v angle =
 	(* Renvoit un nouveau vecteur  sur lequel on a appliqué une rotation de 'angle' *)
 	{x = v.x *. cos angle -. v.y *. sin angle ; y = v.x *. sin angle +. v.y *. cos angle}
 
+let get_angle_cone d_cone =
+	let rapport =  mod_float (d_cone.rayon /. ( norm d_cone.vect ) ) 1. in
+	asin ( rapport )
 
+let get_adj_vect_cone d_cone = 
+	let angle = get_angle_cone d_cone in
+	get_unit_vector (rotate_vect d_cone.vect angle
