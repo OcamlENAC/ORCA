@@ -5,13 +5,14 @@ let is_in_danger_zone (robot : Object.obj) (obstacle : Object.obj) (d_cone : Geo
 	(****Verifier si la pointe du v Vopti est dans le cone****)
 	(*On regarde dans l'ordre angle relatif ? -> avant le cercle ? -> après le cercle ? -> dans le cercle ?*)
 	(*Angle relatif et autres pour les conditions*) 
-	let relat_ang_vrelat_vorient = abs_float (Geometry.relative_angle v_relat v_orient) in
-	let relat_ang_v_tangent_v_orient = abs_float (asin ((d_cone.rayon /. 2.)/.(Geometry.norm v_orient))) in(*Voir le tableau, c'est l'angle alpha*)
-	let norm_proj_vrobot_vorient = Geometry.norm (Geometry.project robot.speed obstacle.speed) in
-	let vect_origincone_pointevectvitesse = Geometry.add_subst ( -. ) v_relat (Geometry.mult_scal (1. /. dt) v_orient) in
+	let relat_ang_vrelat_vorient = abs_float (Geometry.relative_angle v_relat d_cone.vect) in
+	let relat_ang_v_tangent_v_orient = Geometry.get_angle_cone d_cone in
+	(* abs_float (asin ((d_cone.rayon /. 2.)/.(Geometry.norm d_cone.vect))) in(*Voir le tableau, c'est l'angle alpha*)   *)
+	let norm_proj_vrobot_vorient = Geometry.norm (Geometry.project v_relat (Geometry.get_unit_vector d_cone.vect)) in
+	let vect_origincone_pointevectvitesse = Geometry.add_subst ( -. ) v_relat d_cone.vect  in
 	(** Debut des conditions **)
 	if relat_ang_vrelat_vorient > relat_ang_v_tangent_v_orient then false 
-	else if norm_proj_vrobot_vorient > (Geometry.norm v_orient /. dt) then true
+	else if norm_proj_vrobot_vorient > (Geometry.norm d_cone.vect) then true
 	else if Geometry.norm vect_origincone_pointevectvitesse < d_cone.rayon  then true
 	else false
 
@@ -27,15 +28,15 @@ let calc_danger_cone  (robot : Object.obj) (obstacle: Object.obj) dt =
 (**** Calcul des composants du cone ****)
 	let vecttry = (Geometry.add_subst ( -. ) obstacle.position robot.position) in
 	let vect_orientation = Geometry.mult_scal (1./.dt) vecttry in
-	let origin_cone_x = robot.position.x +. (obstacle.position.x -. robot.position.x)/. dt in (* on appelle origine le centre du petit cercle ici*)
-	let origin_cone_y = robot.position.y +. (obstacle.position.y -. robot.position.y)/. dt in
+	let origin_cone_x = robot.position.x +. (obstacle.position.x -. robot.position.x) /. dt in (* on appelle origine le centre du petit cercle ici*)
+	let origin_cone_y = robot.position.y +. (obstacle.position.y -. robot.position.y) /. dt in
 	let origin_cone_vect = {Geometry.x = origin_cone_x; Geometry.y = origin_cone_y} in
 	(*let danger_rayon = (obstacle.diameter +. robot.diameter) *. Geometry.norm (vect_orientation) /. (2. *. dt) in *)
 	let danger_rayon = (obstacle.diameter +. robot.diameter) /. (2. *. dt) in 
 	(**** Def du cone de danger ****)
 	{ Geometry.origin = origin_cone_vect; Geometry.rayon = danger_rayon; Geometry.vect = vect_orientation;}
 
-let render_cone (robot : Object.obj) (obstacle : Object.obj) (d_cone : Geometry.d_cone) dt =
+let render_cone (robot : Object.obj) (obstacle : Object.obj) (d_cone : Geometry.d_cone) in_danger dt =
 	Graphics.set_color Graphics.green;
 	Graphics.moveto (int_of_float robot.position.x) (int_of_float robot.position.y);
 	Graphics.lineto (int_of_float (d_cone.vect.x *. 100.)) (int_of_float (d_cone.vect.y *. 100.));
@@ -48,7 +49,17 @@ let render_cone (robot : Object.obj) (obstacle : Object.obj) (d_cone : Geometry.
 	Graphics.moveto (int_of_float robot.position.x) (int_of_float robot.position.y);
 	Graphics.lineto (int_of_float (robot.position.x +. adj_vect2.x *. longueur)) (int_of_float (robot.position.y +. adj_vect2.y *. longueur));
 	Graphics.draw_circle (int_of_float (d_cone.origin.x)) (int_of_float (d_cone.origin.y)) (int_of_float d_cone.rayon);
-	Graphics.draw_circle (int_of_float (d_cone.origin.x *. dt)) (int_of_float (d_cone.origin.y *. dt)) (int_of_float (d_cone.rayon *. dt))
+	Graphics.draw_circle (int_of_float (d_cone.origin.x *. dt)) (int_of_float (d_cone.origin.y *. dt)) (int_of_float (d_cone.rayon *. dt));
+	Graphics.moveto 50 400;
+	Graphics.set_color Graphics.black;
+	Graphics.set_text_size 50;
+	if in_danger then Graphics.draw_string "DANS LE cone !" else Graphics.draw_string "np";
+	let v_relat_x = robot.speed.x -. obstacle.speed.x in
+	let v_relat_y = robot.speed.y -. obstacle.speed.y in
+	Graphics.moveto (int_of_float robot.position.x) (int_of_float robot.position.y);
+	Graphics.set_color Graphics.red;
+	Graphics.lineto (int_of_float (robot.position.x +. v_relat_x)) (int_of_float (robot.position.y +. v_relat_y))
+
 
 
 let get_correction vr (d_cone : Geometry.d_cone) = (*Printf.printf "%f %f  " proj_vr_cone.x proj_vr_cone.y;*)
@@ -90,7 +101,7 @@ let update objects refreshing_time =
 	let d_cone = calc_danger_cone objA objB dt in
 	let in_danger = is_in_danger_zone objA objB d_cone dt in
 	Printf.printf "%B" in_danger; 
-	render_cone objA objB d_cone dt;
+	render_cone objA objB d_cone in_danger dt;
 	let (new_objA, new_objB) = (new_speed objA objB in_danger d_cone) in
 	
 	[| Object.update_pos new_objA refreshing_time ; Object.update_pos new_objB refreshing_time |]
