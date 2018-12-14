@@ -22,7 +22,7 @@ let render_obj (o : Object.obj) refreshing_time =
 	Graphics.draw_circle (int_of_float (o.position).x) (int_of_float (o.position).y) (int_of_float (o.diameter /. 2.));
 	Graphics.set_color Graphics.blue;
 	Graphics.moveto (int_of_float (o.position).x) (int_of_float (o.position).y);
-	Graphics.lineto (int_of_float (o.position.x +. (o.speed.x *. 2.))) (int_of_float (o.position.y +. (o.speed.y *. 2.)));
+	Graphics.lineto (int_of_float (o.position.x +. (o.speed.x))) (int_of_float (o.position.y +. (o.speed.y)));
 	o
 
 let render objects refreshing_time =
