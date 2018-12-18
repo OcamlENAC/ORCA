@@ -1,4 +1,6 @@
 
+open Geometry
+
 type obj = {
 	position : Geometry.vector;
 	speed : Geometry.vector;
