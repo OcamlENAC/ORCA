@@ -91,6 +91,10 @@ let get_correction vr d_cone = (*Printf.printf "%f %f  " proj_vr_cone.x proj_vr_
 	let proj_vr_cone = Geometry.rotate_vect vr (alpha -. r_angle) in
 	Geometry.add_subst (-.) proj_vr_cone vr 
 
+let calc_half_plane robot correction =
+	let vect = Geometry.add_subst ( +. ) robot.speed correction in
+	let orig = Geometry.add_subst ( +. ) robot.position vect in
+	{Geometry.origin = orig ; Geometry.vect_normal = correction ;}
 
 
 let update objects refreshing_time =
