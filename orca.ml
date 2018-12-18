@@ -1,5 +1,8 @@
+open Object
+open Geometry
 
-let is_in_danger_zone v_relat (d_cone : Geometry.d_cone) dt = 
+
+let is_in_danger_zone v_relat d_cone dt = 
 	(****Verifier si la pointe du v Vopti est dans le cone****)
 	(*On regarde dans l'ordre angle relatif ? -> avant le cercle ? -> après le cercle ? -> dans le cercle ?*)
 	(*Angle relatif et autres pour les conditions*) 
@@ -15,14 +18,15 @@ let is_in_danger_zone v_relat (d_cone : Geometry.d_cone) dt =
 	else false
 
 
-let correct (objA: Object.obj) (objB : Object.obj) correction =
+
+let correct objA objB correction =
 	let new_v_A = Geometry.add_subst (+.) objA.speed (Geometry.mult_scal 0.5 correction) 
 	and new_v_B = Geometry.add_subst (-.) objB.speed (Geometry.mult_scal 0.5 correction) in
 	let new_objA = Object.set_obj_speed objA new_v_A
 	and new_objB = Object.set_obj_speed objB new_v_B in
 	(new_objA, new_objB)
 
-let calc_danger_cone  (robot : Object.obj) (obstacle: Object.obj) dt =
+let calc_danger_cone  robot obstacle dt =
 (**** Calcul des composants du cone ****)
 	let vecttry = (Geometry.add_subst ( -. ) obstacle.position robot.position) in
 	let vect_orientation = Geometry.mult_scal (1./.dt) vecttry in
@@ -34,13 +38,14 @@ let calc_danger_cone  (robot : Object.obj) (obstacle: Object.obj) dt =
 	(**** Def du cone de danger ****)
 	{ Geometry.origin = origin_cone_vect; Geometry.rayon = danger_rayon; Geometry.vect = vect_orientation;}
 
-let render_cone (robot : Object.obj) (obstacle : Object.obj) (d_cone : Geometry.d_cone) in_danger dt =
+let render_cone robot obstacle d_cone in_danger dt =
 	(* Affichage vect du cone *)
-	Graphics.set_color Graphics.green;
+	Graphics.set_color Graphics.magenta;
 	Graphics.moveto (int_of_float robot.position.x) (int_of_float robot.position.y);
 	Graphics.lineto (int_of_float (d_cone.vect.x *. 100.)) (int_of_float (d_cone.vect.y *. 100.));
 	
 	(* Affichage des cotes du cone *)
+	Graphics.set_color Graphics.green;
 	let angle = Geometry.get_angle_cone d_cone in
 	let adj_vect = Geometry.get_adj_vect_cone d_cone in
 	let adj_vect2 = Geometry.rotate_vect adj_vect ((-. 2.) *. angle) in
@@ -70,11 +75,13 @@ let render_cone (robot : Object.obj) (obstacle : Object.obj) (d_cone : Geometry.
 	(* Affichage des destinations *)
 	Graphics.set_color Graphics.cyan;
 	Graphics.fill_circle (int_of_float robot.dest.x) (int_of_float robot.dest.y) 10;
-	Graphics.fill_circle (int_of_float obstacle.dest.x) (int_of_float obstacle.dest.y) 10
+	Graphics.fill_circle (int_of_float obstacle.dest.x) (int_of_float obstacle.dest.y) 10;
+
+	Printf.printf "cone_rayon = %f ,    norme de cone_vect = %f   \n" d_cone.rayon (Geometry.norm d_cone.vect)
 
 
 
-let get_correction vr (d_cone : Geometry.d_cone) = (*Printf.printf "%f %f  " proj_vr_cone.x proj_vr_cone.y;*)
+let get_correction vr d_cone = (*Printf.printf "%f %f  " proj_vr_cone.x proj_vr_cone.y;*)
 	let r_angle = Geometry.relative_angle d_cone.vect vr in
 	let alpha = Geometry.get_angle_cone d_cone in
 	if r_angle < 0. then 
@@ -88,7 +95,7 @@ let get_correction vr (d_cone : Geometry.d_cone) = (*Printf.printf "%f %f  " pro
 
 let update objects refreshing_time =
 	(** Retourne le nouveau point avec les vitesses résultantes de l'algo ORCA*)
-	let dt = 3. in
+	let dt = 5. in
 	let objA = objects.(0) and objB = objects.(1) in
 
 	let d_cone = calc_danger_cone objA objB dt in
@@ -107,7 +114,7 @@ let update objects refreshing_time =
 		[| Object.update_pos new_objA refreshing_time ; Object.update_pos new_objB refreshing_time |]
 	else
 		let old_v_relat = Geometry.add_subst (-.) objA.speed objB.speed in
-		let correction = get_correction old_v_relat d_cone in
+		let correction = get_correction v_relat d_cone in
 		let (new_objA, new_objB) =  correct objA objB correction in
 		[| Object.update_pos new_objA refreshing_time ; Object.update_pos new_objB refreshing_time |]
 		
