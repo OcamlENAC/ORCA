@@ -32,7 +32,7 @@ let render objects refreshing_time =
 let rec start_animation objects refreshing_time =
 	(** Boucle d'animation, ne renvoit rien*)
 	begin
-		Unix.sleepf (refreshing_time);
+		Unix.sleepf (1. /. 25.);
 		Graphics.set_color Graphics.white;
 		Graphics.fill_rect 0 0 (Graphics.size_x ()) (Graphics.size_y ()) ;
 		let no = update objects refreshing_time in
@@ -48,6 +48,6 @@ let () =
 	and p1 = Object.init 800. 0. (-. 40.) 0. 76. 100. 295. 50. in
 	let objects = [|p1 ; p2|]  (* p1 :: p2 :: [] in  init px py sx sy d destx desty ms  
 	let sx = 5. and sy = 1. and d = 20. and destx = 0. and desty = 0. and ms = 100. *)
-	and refreshing_time = 1. /. 25. in
+	and refreshing_time = 1. /. 50. in
 	start_animation objects refreshing_time
 
