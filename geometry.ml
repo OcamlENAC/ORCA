@@ -82,3 +82,11 @@ let get_angle_cone d_cone =
 let get_adj_vect_cone d_cone = 
 	let angle = get_angle_cone d_cone in
 	get_unit_vector (rotate_vect d_cone.vect angle)
+	
+let project_on_plane point plan = 
+	let vdirect = vect_normal_norme plan.vect_normal in
+	let vorigi_plan_point = {x= point.x -. plan.origin.x; y = point.y -. plan.origin.y} in
+	let proj = scalar_product vdirect vorigi_plan_point in
+	let v_origi_proj = mult_scal proj vdirect in
+	let new_point = {x = plan.origin.x +. v_origi_proj.x ; y= plan.origin.y +. v_origi_proj.y} in
+	new_point  
