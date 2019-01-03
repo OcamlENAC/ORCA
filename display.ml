@@ -43,8 +43,8 @@ let rec start_animation objects refreshing_time =
 let () = 
 	Printf.printf("Debut main\n");
 	Graphics.open_graph " 800x600";
-	let p2 = Object.init 300. 200. 25. 25. 76. 600. 500. 50. (* Il se dirige un peu plus haut que la pos initiale de objB*)
-	and p1 = Object.init 500. 300. (-. 40.) 0. 76. 100. 295. 50. in
+	let p2 = Object.init 50. 500. 25. 25. 76. 600. 310. 100. (* Il se dirige un peu plus haut que la pos initiale de objB*)
+	and p1 = Object.init 800. 300. (-. 40.) 0. 76. 100. 295. 100. in
 	let objects = [|p1 ; p2|]  (* p1 :: p2 :: [] in  init px py sx sy d destx desty ms  
 	let sx = 5. and sy = 1. and d = 20. and destx = 0. and desty = 0. and ms = 100. *)
 	and refreshing_time = 1. /. 50. in
