@@ -8,6 +8,7 @@ open Object
 open Geometry
 open Graphics
 open Interface
+open Array
 
 
 let update objects refreshing_time =
@@ -30,36 +31,53 @@ let render objects refreshing_time =
 	Array.map (fun t -> render_obj t refreshing_time) objects 
 
 
-let test_status status pause play show restart =
+let test_status status play show restart prec restart_new =
 	if status = "pause" then
-		begin
-			pause := true;
-			play :=  false;
-		end
+		play :=  false
 	else if status = "play" then
-		begin
-			pause := false; 
-			play := true;
-		end
+		play := true
 	else if status = "show" then
 		show := true
 	else if status = "hide" then
 		show := false
 	else if status = "restart" then
 		restart := true
+	else if status = "prec" then
+		prec := true
+	else if status = "r_new" then
+		restart_new := true
 
 
-let show_inf show objects posi = 
+let show_inf show objects posi it_count = 
 		if !show then 
+			Interface.display_inf posi objects.(0) objects.(1) !it_count
+
+let rec animation objects past_objects refreshing_time play show restart it_count prec restart_new=
+
+begin
+	if !restart_new then 
 		begin
-			posi := Interface.mv_inf !posi;
-			Interface.display_inf !posi objects.(0) objects.(1);
+			Graphics.close_graph ();
+			Graphics.open_graph " 800x600";
+			restart_new := false;
+			it_count := 0;
+			let l = Interface.init_sim () in
+			let x_o1 = l.(0) in
+			let y_o1 = l.(1) in
+			let x_o2 = l.(2) in
+			let y_o2 = l.(3) in
+			let x_d1 = l.(4) in
+			let y_d1 = l.(5) in
+			let x_d2 = l.(6) in
+			let y_d2 = l.(7) in
+
+			let p2 = Object.init x_o2 y_o2 25. 25. 76. x_d2 y_d2 50. 
+			and p1 = Object.init x_o1 y_o1 (-. 40.) 0. 76. x_d1 y_d1 50. in
+			let objects = [| p1 ; p2 |] in
+			past_objects := [|p1 ; p2|];
+			animation objects past_objects refreshing_time play show restart it_count prec restart_new;
 		end
-
-let rec animation objects past_objects refreshing_time pause play show posi restart =
-
-	begin
-	if not !restart then
+	else if not !restart then
 	begin
 
 		Unix.sleepf (1. /. 25.);
@@ -68,42 +86,55 @@ let rec animation objects past_objects refreshing_time pause play show posi rest
 		Graphics.fill_rect 0 0 (Graphics.size_x ()) (Graphics.size_y ()) ;
 
 		let status = Interface.test_clic () in
-		test_status status pause play show restart;
-	
-		show_inf show objects posi;
+		test_status status play show restart prec restart_new;
+		
+		let f_x = Graphics.size_x () and f_y = Graphics.size_y ()  in
+		show_inf show objects ({Geometry.x = float_of_int f_x -. 150. ; Geometry.y = float_of_int f_y /. 2.}) it_count;
 
-		if !pause then
-			let no = objects in
-			let new_objects = render no refreshing_time in
-			animation new_objects past_objects refreshing_time pause play show posi restart;
-
-		else
+		if not !play then
+			begin
+				if not !prec then
+					let no = objects in
+					let new_objects = render no refreshing_time in
+					animation new_objects past_objects refreshing_time play show restart it_count prec restart_new;
+				else 
+					begin
+						prec := false;
+						it_count := ! it_count - 1;
+						let no = [| !past_objects.(!it_count * 2) ; !past_objects.(!it_count * 2 + 1) |] in
+						let new_objects = render no refreshing_time in
+						animation new_objects past_objects refreshing_time play show restart it_count prec restart_new;					
+					end
+				end
+		else if !play then
 			begin
 				let no = update objects refreshing_time in
 				let new_objects = render no refreshing_time in
-				animation new_objects past_objects refreshing_time pause play show posi restart;
+				past_objects := Array.append !past_objects no;
+				it_count := !it_count + 1;
+				animation new_objects past_objects refreshing_time play show restart it_count prec restart_new;
 			end
 	end
-	else
+	else if !restart then
 		begin
 			restart := false;
-			let no = past_objects in
+			let no = [| !past_objects.(0) ; !past_objects.(1) |] in
 			let new_objects = render no refreshing_time in
-			animation new_objects past_objects refreshing_time pause play show posi restart;
+			past_objects := no;
+			it_count := 0;
+			animation new_objects past_objects refreshing_time play show restart it_count prec restart_new;
 		end 
-	end
+end
 
-
-let start_anim restart = 
+let start_anim restart restart_new = 
 
 	(** Boucle d'animation, ne renvoit rien*)
 
-	let pause = ref false in
 	let play = ref true in
 	let show = ref false in
-	let posi = ref {Geometry.x = 600.; Geometry.y = 385.} in
+	let it_count = ref 0 in
+	let prec = ref false in
 
-	Printf.printf("Debut main\n");
 	Graphics.open_graph " 800x600";
 
 	let l = Interface.init_sim () in
@@ -116,14 +147,15 @@ let start_anim restart =
 	let x_d2 = l.(6) in
 	let y_d2 = l.(7) in
 
-	let p2 = Object.init x_o2 y_o2 25. 25. 76. x_d2 y_d2 50. (* Il se dirige un peu plus haut que la pos initiale de objB*)
-	and p1 = Object.init x_o1 y_o1 (-. 40.) 0. 76. x_d1 y_d1 50. in
-	let objects = [|p1 ; p2|]  (* p1 :: p2 :: [] in  init px py sx sy d destx desty ms  
-	let sx = 5. and sy = 1. and d = 20. and destx = 0. and desty = 0. and ms = 100. *)
-	and refreshing_time = 1. /. 50. in
-	animation objects objects refreshing_time pause play show posi restart
+	let p2 = Object.init x_o2 y_o2 25. 25. 76. x_d2 y_d2 50. 
+	and p1 = Object.init x_o1 y_o1 (-. 40.) 0. 76. x_d1 y_d1 50. 
+	and refreshing_time = 1. /. 75. in
+	let objects = [| p1 ; p2 |] in
+	let past_objects = ref [|p1 ; p2|] in 
+	animation objects past_objects refreshing_time play show restart it_count prec restart_new
 
 let () = 
 	
 	let restart = ref false in
-	start_anim restart
+	let restart_new = ref false in
+	start_anim restart restart_new
