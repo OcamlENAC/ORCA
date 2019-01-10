@@ -15,18 +15,19 @@ let init_button x y text size =
 let draw_button button =
 	Graphics.set_color Graphics.black;
 	Graphics.moveto button.x button.y;
-	Graphics.lineto button.x (button.y + button.size / 2);
+	Graphics.lineto button.x (button.y + button.size / 2 );
 	Graphics.lineto (button.x + button.size) (button.y + button.size / 2);
 	Graphics.lineto (button.x + button.size) button.y;
 	Graphics.lineto button.x button.y;
-	Graphics.moveto (button.x + button.size / 2) (button.y + button.size / 4);
+	Graphics.moveto (button.x + button.size / 4) (button.y + button.size / 6);
 	Graphics.draw_string button.text
 
 let is_in_button m_x m_y button =
 	if m_x > button.x && m_x < button.x + button.size && m_y > button.y && m_y < button.y + button.size / 2
 	then true else false
 
-let display_inf (orig : Geometry.vector) obj1 obj2 =
+let display_inf (orig : Geometry.vector) obj1 obj2 it_count =
+	let f_x = Graphics.size_x () in
 	let ori_x = int_of_float orig.x in
 	let ori_y = int_of_float orig.y in
 	Graphics.set_color Graphics.black;
@@ -49,44 +50,42 @@ let display_inf (orig : Geometry.vector) obj1 obj2 =
 	Graphics.moveto ori_x (ori_y - 80);
 	let vx2 = int_of_float obj2.speed.x in
 	let vy2 = int_of_float obj2.speed.y in
-	Graphics.draw_string ("Speed x : " ^ string_of_int vx2 ^ " y : " ^ string_of_int vy2)
+	Graphics.draw_string ("Speed x : " ^ string_of_int vx2 ^ " y : " ^ string_of_int vy2);
+	Graphics.moveto (f_x /2 + 90) 5;
+	Graphics.draw_string ("Iteration : "^ string_of_int it_count)
 
 let make_interface () = 
-	let b_pause = init_button 400 20 "Pause" 60 in
+	let f_x = Graphics.size_x () in
+	let b_pause = init_button (f_x / 2 - 90) 20 "Pause" 60 in
 	draw_button b_pause;
-	let b_play = init_button 400 60 "Play" 60 in
+	let b_play = init_button (f_x / 2 - 90) 60 "Play" 60 in
 	draw_button b_play;
-	let b_show_inf = init_button 460 60 "Show" 60 in
+	let b_show_inf = init_button (f_x / 2 - 30) 60 "Show" 60 in
 	draw_button b_show_inf;
-	let b_hide_inf = init_button 460 20 "Hide" 60 in
+	let b_hide_inf = init_button (f_x / 2 - 30) 20 "Hide" 60 in
 	draw_button b_hide_inf;
-	let b_restart = init_button 520 20 "Restart" 60 in
+	let b_restart = init_button (f_x / 2 + 30) 20 "Restart" 60 in
 	draw_button b_restart;
-	[| b_pause ; b_play ; b_show_inf ; b_hide_inf ; b_restart|]
+	let b_prec = init_button (f_x / 2 + 90) 20 "Prec" 60 in
+	draw_button b_prec;
+	let b_restart_new = init_button (f_x / 2 + 30) 60 "R_new" 60 in
+	draw_button b_restart_new;
+	[| b_pause ; b_play ; b_show_inf ; b_hide_inf ; b_restart ; b_prec ; b_restart_new |]
 
-let get_clic () =
+let get_clic () = 
 	let status = Graphics.wait_next_event [Button_down] in
 	let o_x = status.mouse_x in
 	let o_y = status.mouse_y in
 	[| o_x ; o_y |]
 
-let get_clic_2 () =
-	Printf.printf "Appel à clic 2 \n";
-	let stat = Graphics.wait_next_event [Button_up] in
-	let o_x = stat.mouse_x in
-	let o_y = stat.mouse_y in
-	({Geometry.x = float_of_int o_x ; Geometry.y = float_of_int o_y} : Geometry.vector )
-
-let mv_inf (posi : Geometry.vector) =
-	let status = Graphics.wait_next_event [Poll] in
-	let s = Graphics.button_down () in
-	let fake_button = {x = int_of_float posi.x; y = int_of_float posi.y; text = ""; size = 10} in
-	if s && is_in_button status.mouse_x status.mouse_y fake_button then
-	get_clic_2 ()
-	else posi 
-
 let init_sim () =
 	(* Partie de selection du départ et de l'arrivée *)
+
+	Graphics.moveto 400 300;
+	Graphics.draw_string " Cliquez pour lancer la simulation ";
+	let s = get_clic () in
+	Graphics.clear_graph () ;
+
 	(* départ obj 1 *)
 	Graphics.set_color Graphics.black;
 	Graphics.moveto 400 300;
@@ -148,6 +147,8 @@ let test_clic () =
 	let b_show_inf = list_but.(2) in
 	let b_hide_inf = list_but.(3) in
 	let b_restart = list_but.(4) in 
+	let b_prec = list_but.(5) in
+	let b_restart_new = list_but.(6) in
 
 	let status = Graphics.wait_next_event [Poll] in
 	let s = Graphics.button_down () in
@@ -156,5 +157,6 @@ let test_clic () =
 	else if s && is_in_button status.mouse_x status.mouse_y b_show_inf then "show"
 	else if s && is_in_button status.mouse_x status.mouse_y b_hide_inf then "hide"
 	else if s && is_in_button status.mouse_x status.mouse_y b_restart then "restart"
+	else if s && is_in_button status.mouse_x status.mouse_y b_prec then "prec"
+	else if s && is_in_button status.mouse_x status.mouse_y b_restart_new then "r_new"
 	else "none"
-
